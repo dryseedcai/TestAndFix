@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
 import java.io.File;
 
@@ -22,6 +23,7 @@ public class AndFixService extends Service {
     private static final int DOWNLOAD_PATCH = 0X01;
     private static final String FILE_EXTENSION = ".apatch";
 
+    private String mBasePathInfo;
     private String mPathFileDir;
     private String mPathFile;
     private Handler mHandler = new Handler(){
@@ -32,6 +34,7 @@ public class AndFixService extends Service {
                     checkPatchUpdate();
                     break;
                 case DOWNLOAD_PATCH:
+                    downloadPatch();
                     break;
                 default:
                     break;
@@ -80,6 +83,36 @@ public class AndFixService extends Service {
      * 检查服务器是否有patch文件
      */
     private void checkPatchUpdate() {
+        /*RestClient.builder()
+                .url(RequestData.ADDRESS.name())
+                .loader(getContext())
+                .success(this)
+                .build()
+                .get();*/
+
+        //onSuccess
+        mBasePathInfo = "not null"; //get from server
+        if(!TextUtils.isEmpty(mBasePathInfo)){
+            mHandler.sendEmptyMessage(DOWNLOAD_PATCH);
+        } else {
+            stopSelf();
+        }
     }
 
+    /**
+     * 从服务器下载patch文件
+     */
+    private void downloadPatch() {
+        mPathFile = mPathFileDir.concat(String.valueOf(System.currentTimeMillis())).concat(FILE_EXTENSION);
+        /*RestClient.builder()
+                .url(mBasePathInfo)
+                .dir(mPathFile)
+                .loader(getContext())
+                .success(this)
+                .build()
+                .download();*/
+
+        //onSuccess
+        AndFixPatchManager.getInstance().addPatch(mPathFile);
+    }
 }
